@@ -7,44 +7,48 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <lib/ce/graphx.h>
+
+#include <Sprites.h>
+#include <xlibcsprites.h>
+
 #include "GameFunctions.h"
 
 #include "Tests.h"
+#include "Structdefs.h"
 
-void KeyLeft(int* x, bool* WithinScreen, bool* WithinGun, int* ShowFiring, int* CanShoot)
+/*void KeyLeft(int* x, bool* WithinScreen, bool* WithinGun, int* ShowFiring, int* CanShoot, int* ShowBloodSplatter)
 {
     int i;
-    WithinScreen=CheckInScreen(Zombie.x);
-    WithinGun=CheckInGun(Zombie.x);
+    CheckRange(x, WithinScreen, WithinGun);
     if (ShowFiring)
         --ShowFiring;
     if (CanShoot)
         --CanShoot;
-    if (Zombie.WithinScreen)
+    if (WithinScreen)
     {
-        gfx_FillRectangle(Zombie.x,30,225,210);
+        gfx_FillRectangle(*x,30,225,210);
     }
-    if (Zombie.x>=900)
+    if (*x>=675)
     {
-        Zombie.x=-225;
+        *x=-225;
     }else{
-        Zombie.x+=8;
+        *x+=8;
     }
-    WithinScreen=CheckInScreen(x);
-    WithinGun=CheckInGun(x);
-    if (Zombie.WithinScreen)
+    CheckRange(x, WithinScreen, WithinGun);
+    if (WithinScreen)
     {
         gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
-        gfx_TransparentSprite(EnemySprite,Zombie.x,30);
+        gfx_TransparentSprite(EnemySprite,*x,30);
         gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
         for(i=0;i<2;i--)
         {
-            if (Zombie.ShowBloodSplatter[i])
+            if (ShowBloodSplatter[i])
             {
-                gfx_TransparentSprite(BloodSplatter,Zombie.ShowBloodSplatter[i]+x,100);
+                gfx_TransparentSprite(BloodSplatter,ShowBloodSplatter[i]+*x,100);
             }
         }
-        if (Zombie.WithinGun)
+        if (WithinGun)
         {
             if (ShowFiring)
             {
@@ -55,39 +59,39 @@ void KeyLeft(int* x, bool* WithinScreen, bool* WithinGun, int* ShowFiring, int* 
         }
     }
 }
-void KeyRight(int x)
+
+void KeyRight(int* x, bool* WithinScreen, bool* WithinGun, int* ShowFiring, int* CanShoot, int* ShowBloodSplatter)
 {
-    Zombie.WithinScreen=CheckInScreen(Zombie.x);
-    Zombie.WithinGun=CheckInGun(Zombie.x);
+    int i;
+    CheckRange(x, WithinScreen, WithinGun);
     if (ShowFiring)
         --ShowFiring;
     if (CanShoot)
         --CanShoot;
-    if (Zombie.WithinScreen)
+    if (WithinScreen)
     {
-        gfx_FillRectangle(Zombie.x,30,225,210);
+        gfx_FillRectangle(*x,30,225,210);
     }
-    if (Zombie.x>=900)
+    if (*x>=675)
     {
-        Zombie.x=-225;
+        *x=-225;
     }else{
-        Zombie.x+=8;
+        *x+=8;
     }
-    Zombie.WithinScreen=CheckInScreen(Zombie.x);
-    Zombie.WithinGun=CheckInGun(Zombie.x);
-    if (Zombie.WithinScreen)
+    CheckRange(x, WithinScreen, WithinGun);
+    if (WithinScreen)
     {
         gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
-        gfx_TransparentSprite(EnemySprite,Zombie.x,30);
+        gfx_TransparentSprite(EnemySprite,*x,30);
         gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
-        for(x=0;x<2;x--)
+        for(i=0;i<2;i--)
         {
-            if (Zombie.ShowBloodSplatter[x])
+            if (ShowBloodSplatter[i])
             {
-                gfx_TransparentSprite(BloodSplatter,Zombie.ShowBloodSplatter[x]+Zombie.x,100);
+                gfx_TransparentSprite(BloodSplatter,ShowBloodSplatter[i]+*x,100);
             }
         }
-        if (Zombie.WithinGun)
+        if (WithinGun)
         {
             if (ShowFiring)
             {
@@ -97,4 +101,32 @@ void KeyRight(int x)
             }
         }
     }
+}*/
+
+void ZombieDead(int x)
+{
+    gfx_PrintStringXY("Kill!",150,0);
+    gfx_FillRectangle(x,30,225,210);
+    gfx_BlitBuffer();
+}
+
+struct zombie NewZombie(void){
+    zombie Zombie;
+    Zombie.x=randInt(-225,450);
+    Zombie.health=100;
+    Zombie.ShowBloodSplatter[0]=0;
+    Zombie.ShowBloodSplatter[1]=0;
+    Zombie.zType=NORMAL;
+    return Zombie;
+}
+
+//update will eventually display stats and other information. Now simply used for displaying info useful for debugging.
+void update(int x, int ammo)
+{
+    gfx_FillRectangle(0,0,30,20);
+    gfx_SetTextXY(0,0);
+    gfx_PrintInt(x,3);
+    gfx_SetTextXY(0,9);
+    gfx_PrintInt(ammo,2);
+    gfx_BlitBuffer();
 }
