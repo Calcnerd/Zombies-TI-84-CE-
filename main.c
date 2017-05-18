@@ -24,25 +24,27 @@
 
 #include "Structdefs.h"
 #include "Tests.h"
-#include "KeyFunctions.h"
+#include "GameFunctions.h"
 
 
-void zombie_dead(void);
-bool shoot_gun();
-void update(int x, int ammo);
-void NewZombie(void);
+bool shoot_gun(void);
 
-player Player;
-zombie Zombie;
 
 void main()
 {
+    player Player;
+    zombie Zombie;
     int kTurn=0, kShoot=0, kMenu=0, kExit=0;
-    int ShowFiring=0, CanShoot=0, x;
+    int ShowFiring=0, CanShoot=0, i;
+    //seed random number generator
     srand(rtc_Time());
+    Zombie.x=randInt(-225,450);
+    Zombie.health=100;
+    Zombie.ShowBloodSplatter[0]=0;
+    Zombie.ShowBloodSplatter[1]=0;
+    Zombie.zType=NORMAL;
     Player.ammo=10;
     Player.health=100;
-    NewZombie();
     gfx_Begin(gfx_8bpp);
     gfx_SetDrawBuffer();
     gfx_SetColor(255);
@@ -56,8 +58,7 @@ void main()
     {
         if (kTurn & kb_Left)
         {
-            Zombie.WithinScreen=CheckInScreen(Zombie.x);
-            Zombie.WithinGun=CheckInGun(Zombie.x);
+            CheckRange(Zombie.x, Zombie.WithinScreen, Zombie.WithinGun);
             if (ShowFiring)
                 --ShowFiring;
             if (CanShoot)
@@ -72,18 +73,17 @@ void main()
             }else{
                 Zombie.x+=8;
             }
-            Zombie.WithinScreen=CheckInScreen(Zombie.x);
-            Zombie.WithinGun=CheckInGun(Zombie.x);
+            CheckRange(Zombie.x, Zombie.WithinScreen, Zombie.WithinGun);
             if (Zombie.WithinScreen)
             {
                 gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
                 gfx_TransparentSprite(EnemySprite,Zombie.x,30);
                 gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
-                for(x=0;x<2;x--)
+                for(i=0;i<2;i++)
                 {
-                    if (Zombie.ShowBloodSplatter[x])
+                    if (Zombie.ShowBloodSplatter[i])
                     {
-                        gfx_TransparentSprite(BloodSplatter,Zombie.ShowBloodSplatter[x]+Zombie.x,100);
+                        gfx_TransparentSprite(BloodSplatter,Zombie.ShowBloodSplatter[i]+Zombie.x,100);
                     }
                 }
                 if (Zombie.WithinGun)
@@ -100,8 +100,7 @@ void main()
         }
         if (kTurn & kb_Right)
         {
-            Zombie.WithinScreen=CheckInScreen(Zombie.x);
-            Zombie.WithinGun=CheckInGun(Zombie.x);
+            CheckRange(Zombie.x, Zombie.WithinScreen, Zombie.WithinGun);
             if (ShowFiring)
                 --ShowFiring;
             if (CanShoot)
@@ -116,16 +115,15 @@ void main()
             }else{
                 Zombie.x-=8;
             }
-            Zombie.WithinScreen=CheckInScreen(Zombie.x);
-            Zombie.WithinGun=CheckInGun(Zombie.x);
+            CheckRange(Zombie.x, Zombie.WithinScreen, Zombie.WithinGun);
             if (Zombie.WithinScreen){
                 gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
                 gfx_TransparentSprite(EnemySprite,Zombie.x,30);
                 gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
-                for(x=0;x<2;x--){
-                    if (Zombie.ShowBloodSplatter[x])
+                for(i=0;i<2;i++){
+                    if (Zombie.ShowBloodSplatter[i])
                     {
-                        gfx_TransparentSprite(BloodSplatter,Zombie.ShowBloodSplatter[x]+Zombie.x,100);
+                        gfx_TransparentSprite(BloodSplatter,Zombie.ShowBloodSplatter[i]+Zombie.x,100);
                     }
                 }
                 if (Zombie.WithinGun){
@@ -146,10 +144,10 @@ void main()
                 --Player.ammo;
                 if (shoot_gun())
                 {
-                    AddBloodSplatter(Zombie.x, Zombie.ShowBloodSplatter[0], Zombie.ShowBloodSplatter[1]);
+                    AddBloodSplatter(Zombie.x, Zombie.ShowBloodSplatter);
                     Zombie.health-=50;
                     if (!Zombie.health)
-                        zombie_dead();
+                        ZombieDead(Zombie.x);
                 }
             }
             update(Zombie.x, Player.ammo);
@@ -166,7 +164,7 @@ void main()
                     gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
                     gfx_TransparentSprite(EnemySprite,Zombie.x,30);
                 }else{
-                    for(x=0;x<50;x++)
+                    for(i=0;i<50;i++)
                         gfx_FillRectangle(131,154,57,86);
                 }
                 gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
@@ -177,7 +175,7 @@ void main()
                     gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
                     gfx_TransparentSprite(EnemySprite,Zombie.x,30);
                 }else{
-                    for(x=0;x<50;x++)
+                    for(i=0;i<50;i++)
                         gfx_FillRectangle(131,172,57,70);
                 }
                 gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
@@ -190,8 +188,6 @@ void main()
         {
             --CanShoot;
         }
-        Zombie.WithinScreen=CheckInScreen(Zombie.x);
-        Zombie.WithinGun=CheckInGun(Zombie.x);
         kShoot=kb_ScanGroup(kb_group_1);
         kTurn=kb_ScanGroup(kb_group_7);
     }
@@ -236,31 +232,4 @@ bool shoot_gun(void){
         hit=false;
     }
     return hit;
-}
-
-void zombie_dead(void)
-{
-    gfx_PrintStringXY("Kill!",150,0);
-    gfx_FillRectangle(Zombie.x,30,225,210);
-    gfx_BlitBuffer();
-}
-
-//update will eventually display stats and other information. Now simply used for displaying info useful for debugging.
-void update(int x, int ammo)
-{
-    gfx_FillRectangle(0,0,30,20);
-    gfx_SetTextXY(0,0);
-    gfx_PrintInt(x,3);
-    gfx_SetTextXY(0,9);
-    gfx_PrintInt(ammo,2);
-    gfx_BlitBuffer();
-}
-
-void NewZombie(void){
-    zombie Zombie;
-    Zombie.x=randInt(-225,450);
-    Zombie.health=100;
-    Zombie.ShowBloodSplatter[0]=0;
-    Zombie.ShowBloodSplatter[1]=0;
-    Zombie.zType=NORMAL;
 }
