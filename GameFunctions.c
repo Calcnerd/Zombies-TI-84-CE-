@@ -17,92 +17,6 @@
 #include "Tests.h"
 #include "Structdefs.h"
 
-/*void KeyLeft(int* x, bool* WithinScreen, bool* WithinGun, int* ShowFiring, int* CanShoot, int* ShowBloodSplatter)
-{
-    int i;
-    CheckRange(x, WithinScreen, WithinGun);
-    if (ShowFiring)
-        --ShowFiring;
-    if (CanShoot)
-        --CanShoot;
-    if (WithinScreen)
-    {
-        gfx_FillRectangle(*x,30,225,210);
-    }
-    if (*x>=675)
-    {
-        *x=-225;
-    }else{
-        *x+=8;
-    }
-    CheckRange(x, WithinScreen, WithinGun);
-    if (WithinScreen)
-    {
-        gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
-        gfx_TransparentSprite(EnemySprite,*x,30);
-        gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
-        for(i=0;i<2;i--)
-        {
-            if (ShowBloodSplatter[i])
-            {
-                gfx_TransparentSprite(BloodSplatter,ShowBloodSplatter[i]+*x,100);
-            }
-        }
-        if (WithinGun)
-        {
-            if (ShowFiring)
-            {
-                gfx_TransparentSprite(SilencedPistolFiring,131,154);
-            }else{
-                gfx_TransparentSprite(SilencedPistol,131,174);
-            }
-        }
-    }
-}
-
-void KeyRight(int* x, bool* WithinScreen, bool* WithinGun, int* ShowFiring, int* CanShoot, int* ShowBloodSplatter)
-{
-    int i;
-    CheckRange(x, WithinScreen, WithinGun);
-    if (ShowFiring)
-        --ShowFiring;
-    if (CanShoot)
-        --CanShoot;
-    if (WithinScreen)
-    {
-        gfx_FillRectangle(*x,30,225,210);
-    }
-    if (*x>=675)
-    {
-        *x=-225;
-    }else{
-        *x+=8;
-    }
-    CheckRange(x, WithinScreen, WithinGun);
-    if (WithinScreen)
-    {
-        gfx_SetPalette(sprites_pal,sizeof(sprites_pal),0);
-        gfx_TransparentSprite(EnemySprite,*x,30);
-        gfx_SetPalette(xlibcsprites_pal,sizeof(xlibcsprites_pal),0);
-        for(i=0;i<2;i--)
-        {
-            if (ShowBloodSplatter[i])
-            {
-                gfx_TransparentSprite(BloodSplatter,ShowBloodSplatter[i]+*x,100);
-            }
-        }
-        if (WithinGun)
-        {
-            if (ShowFiring)
-            {
-                gfx_TransparentSprite(SilencedPistolFiring,131,154);
-            }else{
-                gfx_TransparentSprite(SilencedPistol,131,174);
-            }
-        }
-    }
-}*/
-
 void ZombieDead(int x)
 {
     gfx_PrintStringXY("Kill!",150,0);
@@ -110,14 +24,13 @@ void ZombieDead(int x)
     gfx_BlitBuffer();
 }
 
-struct zombie NewZombie(void){
-    zombie Zombie;
-    Zombie.x=randInt(-225,450);
-    Zombie.health=100;
-    Zombie.ShowBloodSplatter[0]=0;
-    Zombie.ShowBloodSplatter[1]=0;
-    Zombie.zType=NORMAL;
-    return Zombie;
+void NewZombie(int* x, int* health, int* ShowBloodSplatter[], enum TYPE *zType)
+{
+    *x=randInt(-225,450);
+    *health=100;
+    *ShowBloodSplatter[0]=0;
+    *ShowBloodSplatter[1]=0;
+    *zType=NORMAL;
 }
 
 //update will eventually display stats and other information. Now simply used for displaying info useful for debugging.
@@ -129,4 +42,65 @@ void update(int x, int ammo)
     gfx_SetTextXY(0,9);
     gfx_PrintInt(ammo,2);
     gfx_BlitBuffer();
+}
+
+void Sprite(int x, int ShowBloodSplatter[], int WithinScreen, int WithinGun, int ShowFiring, int Health)
+{
+    int i;
+    if (Health)
+    {
+        if (WithinScreen)
+        {
+            gfx_TransparentSprite(EnemySprite,x,30);
+            for(i=0;i<2;i++)
+            {
+                if (ShowBloodSplatter[i])
+                {
+                    gfx_TransparentSprite(BloodSplatter,ShowBloodSplatter[i]+x,150);
+                }
+            }
+            if (WithinGun)
+            {
+                if (ShowFiring)
+                {
+                    gfx_TransparentSprite(SilencedPistolFiring,131,154);
+                }else{
+                    gfx_TransparentSprite(SilencedPistol,131,174);
+                }
+            }
+        }
+    }
+}
+
+bool shoot_gun(int x, int ShowBloodSplatter[], bool* WithinScreen, bool* WithinGun, int ShowFiring, int health)
+{
+    bool hit;
+    int i;
+    CheckRange(x, WithinScreen, WithinGun);
+    //gun moving upward
+    if (WithinGun)
+    {
+        Sprite(x, ShowBloodSplatter, *WithinScreen, *WithinGun, ShowFiring, health);
+    }else{
+        for(i=0;i<50;i++)
+            gfx_FillRectangle(131,174,57,70);
+    }
+    gfx_TransparentSprite(SilencedPistol,131,172);
+    gfx_BlitBuffer();
+    if (WithinGun)
+    {
+        Sprite(x, ShowBloodSplatter, *WithinScreen, *WithinGun, ShowFiring, health);
+    }else{
+        for(i=0;i<50;i++)
+            gfx_FillRectangle(131,172,57,70);
+    }
+    gfx_TransparentSprite(SilencedPistolFiring,131,154);
+    gfx_BlitBuffer();
+    if(x+50<=158 && x+175>=162)
+    {
+        hit=true;
+    }else{
+        hit=false;
+    }
+    return hit;
 }
