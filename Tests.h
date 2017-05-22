@@ -2,8 +2,7 @@
 #define _Tests_h
 
 /*simple functions that check things*/
-bool CheckInScreen(int x);
-bool CheckInGun(int x);
-void AddBloodSplatter(int x, int ShowBloodSplatter0, int BloodSplatter1);
+void AddBloodSplatter(int x, int* ShowBloodSplatter);
+void CheckRange(int x, bool* WithinScreen, bool* WithinGun);
 
 #endif
