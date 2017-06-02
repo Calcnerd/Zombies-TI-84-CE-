@@ -3,6 +3,6 @@
 
 /*simple functions that check things*/
 void AddBloodSplatter(int x, int* ShowBloodSplatter);
-void CheckRange(int x, bool* WithinScreen, bool* WithinGun);
+void CheckRange(int x, bool* WithinScreen, bool* WithinGun, bool* GunRedraw);
 
 #endif
