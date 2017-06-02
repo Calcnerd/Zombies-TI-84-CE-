@@ -24,13 +24,14 @@ void ZombieDead(int x)
     gfx_BlitBuffer();
 }
 
-void NewZombie(int* x, int* health, int* ShowBloodSplatter[], enum TYPE *zType)
+void NewZombie(int* x, int* health, int* ShowBloodSplatter, enum TYPE *zType)
 {
     *x=randInt(-225,450);
     *health=100;
-    *ShowBloodSplatter[0]=0;
-    *ShowBloodSplatter[1]=0;
+    ShowBloodSplatter[0]=0;
+    ShowBloodSplatter[1]=0;
     *zType=NORMAL;
+    //Note: need to redraw zombie after
 }
 
 //update will eventually display stats and other information. Now simply used for displaying info useful for debugging.
@@ -72,11 +73,11 @@ void Sprite(int x, int ShowBloodSplatter[], int WithinScreen, int WithinGun, int
     }
 }
 
-bool shoot_gun(int x, int ShowBloodSplatter[], bool* WithinScreen, bool* WithinGun, int ShowFiring, int health)
+bool shoot_gun(int x, int ShowBloodSplatter[], bool* WithinScreen, bool* WithinGun, bool* GunRedraw, int ShowFiring, int health)
 {
     bool hit;
     int i;
-    CheckRange(x, WithinScreen, WithinGun);
+    CheckRange(x, WithinScreen, WithinGun, GunRedraw);
     //gun moving upward
     if (WithinGun)
     {
