@@ -13,7 +13,7 @@
 
 
 /*Libraries*/
-#include <lib/ce/graphx.h>
+#include <graphx.h>
 #include <lib/ce/keypadc.h>
 
 
@@ -56,7 +56,7 @@ void main()
     {
         if (kTurn & kb_Left)
         {
-            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun);
+            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun, &Zombie.GunRedraw);
             if (ShowFiring)
                 --ShowFiring;
             if (CanShoot)
@@ -65,19 +65,19 @@ void main()
             {
                 gfx_FillRectangle(Zombie.x,30,225,210);
             }
-            if (Zombie.x>=450)
+            if (Zombie.x>=675)
             {
                 Zombie.x=-225;
             }else{
                 Zombie.x+=8;
             }
-            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun);
+            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun, &Zombie.GunRedraw);
             Sprite(Zombie.x, Zombie.ShowBloodSplatter, Zombie.WithinScreen, Zombie.WithinGun, ShowFiring, Zombie.health);
             update(Zombie.x, Player.ammo);
         }
         if (kTurn & kb_Right)
         {
-            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun);
+            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun, &Zombie.GunRedraw);
             if (ShowFiring)
                 --ShowFiring;
             if (CanShoot)
@@ -88,25 +88,30 @@ void main()
             }
             if (Zombie.x<=-225)
             {
-                Zombie.x=450;
+                Zombie.x=675;
             }else{
                 Zombie.x-=8;
             }
-            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun);
+            CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun, &Zombie.GunRedraw);
             Sprite(Zombie.x, Zombie.ShowBloodSplatter, Zombie.WithinScreen, Zombie.WithinGun, ShowFiring, Zombie.health);
             update(Zombie.x, Player.ammo);
         }
-        if ((kShoot & kb_2nd) && (!ShowFiring && !CanShoot)){
+        if ((kShoot & kb_2nd) && (!ShowFiring && !CanShoot))
+        {
             if (Player.ammo)
             {
                 ShowFiring=10;
                 --Player.ammo;
-                if (shoot_gun(Zombie.x, Zombie.ShowBloodSplatter, &Zombie.WithinScreen, &Zombie.WithinGun, ShowFiring, Zombie.health))
+                if (shoot_gun(Zombie.x, Zombie.ShowBloodSplatter, &Zombie.WithinScreen, &Zombie.WithinGun, &Zombie.GunRedraw, ShowFiring, Zombie.health))
                 {
                     AddBloodSplatter(Zombie.x, Zombie.ShowBloodSplatter);
                     Zombie.health-=50;
                     if (!Zombie.health)
+                    {
+                        Sprite(Zombie.x, Zombie.ShowBloodSplatter, Zombie.WithinScreen, Zombie.WithinGun, ShowFiring, 1);
                         ZombieDead(Zombie.x);
+                        NewZombie(&Zombie.x, &Zombie.health, &Zombie.ShowBloodSplatter, &Zombie.zType);
+                    }
                 }
             }
             update(Zombie.x, Player.ammo);
@@ -117,6 +122,7 @@ void main()
             --ShowFiring;
             if (!ShowFiring)
             {
+                CheckRange(Zombie.x, &Zombie.WithinScreen, &Zombie.WithinGun, &Zombie.GunRedraw);
                 if (Zombie.WithinGun)
                 {
                     Sprite(Zombie.x, Zombie.ShowBloodSplatter, Zombie.WithinScreen, Zombie.WithinGun, ShowFiring, Zombie.health);
