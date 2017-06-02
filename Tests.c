@@ -17,7 +17,7 @@ void AddBloodSplatter(int x, int* ShowBloodSplatter/*, int ShowBloodSplatter*/)
         }
 }
 
-void CheckRange(int x, bool* WithinScreen, bool* WithinGun)
+void CheckRange(int x, bool* WithinScreen, bool* WithinGun, bool* GunRedraw)
 {
     if (x+225>=0 && x<=320)
     {
@@ -28,7 +28,14 @@ void CheckRange(int x, bool* WithinScreen, bool* WithinGun)
     if (x+225>=188 && x<=131)
     {
         *WithinGun=true;
+        return;
     }else{
         *WithinGun=false;
+    }
+    if (x+225>=131 && x<=188)
+    {
+        *GunRedraw=true;
+    }else{
+        *GunRedraw=false;
     }
 }
